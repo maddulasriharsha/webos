@@ -59,8 +59,11 @@ function loadWins(): WinState[] {
     const wins = saved.flatMap((w) => {
       const app = APPS.find((a) => a.id === w.id);
       if (!app) return [];
-      // keep restored windows reachable if the viewport is smaller than last time
-      return [{ ...w, title: app.title, icon: app.icon, x: Math.min(w.x, window.innerWidth - 80), y: Math.min(w.y, window.innerHeight - 40) }];
+      // keep restored windows on screen if the viewport is smaller than last time
+      const ww = Math.min(w.w, window.innerWidth - 20);
+      const x = Math.max(10, Math.min(w.x, window.innerWidth - ww - 10));
+      const y = Math.max(34, Math.min(w.y, window.innerHeight - 100));
+      return [{ ...w, title: app.title, icon: app.icon, w: ww, x, y, restore: undefined }];
     });
     zCounter = Math.max(zCounter, ...wins.map((w) => w.z));
     return wins;
@@ -121,7 +124,7 @@ export default function App() {
     const h = Math.min(app.h, window.innerHeight - 120);
     setWins((ws) => [
       ...ws,
-      { id: app.id, title: app.title, icon: app.icon, x: Math.max(10, 140 + off), y: 60 + off, w, h, z: ++zCounter, minimized: false },
+      { id: app.id, title: app.title, icon: app.icon, x: Math.max(10, Math.min(140 + off, window.innerWidth - w - 10)), y: 60 + off, w, h, z: ++zCounter, minimized: false },
     ]);
     setFocus(app.id);
   };
