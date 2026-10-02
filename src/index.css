@@ -137,7 +137,14 @@ input, textarea { font: inherit; color: inherit; }
 .win-ctrls { display: flex; gap: 8px; }
 .dot { width: 14px; height: 14px; border-radius: 50%; }
 .dot.min { background: #fbbf24; }
+.dot.max { background: #4ade80; }
 .dot.close { background: #f87171; }
+.window.snapped { border-radius: 6px; }
+.snap-preview {
+  position: fixed; z-index: 9999; pointer-events: none; border-radius: 12px;
+  background: color-mix(in srgb, var(--accent2) 22%, transparent);
+  border: 2px solid var(--accent2); transition: all .12s ease-out;
+}
 .dot:hover { filter: brightness(1.3); transform: scale(1.15); }
 .win-body { flex: 1; overflow: auto; padding: 16px; user-select: text; }
 .resize {

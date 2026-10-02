@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Window, { type WinState } from "./Window";
+import Window, { type Rect, type WinState } from "./Window";
 import { About, Calculator, Files, Notes, Settings, Snake, Terminal, ME, applyTheme, applyWallpaper, type AppDef } from "./apps";
 
 const APPS: AppDef[] = [
@@ -53,6 +53,7 @@ export default function App() {
   const [booted, setBooted] = useState(false);
   const [wins, setWins] = useState<WinState[]>([]);
   const [focus, setFocus] = useState<string | null>(null);
+  const [snap, setSnap] = useState<Rect | null>(null);
 
   useEffect(() => {
     applyTheme(localStorage.getItem("nebula-theme") ?? "nebula");
@@ -117,11 +118,14 @@ export default function App() {
               setFocus(null);
             }}
             onChange={(p) => patch(w.id, p)}
+            onSnapPreview={setSnap}
           >
             {app.render({ open, closeAll })}
           </Window>
         );
       })}
+
+      {snap && <div className="snap-preview" style={{ left: snap.x, top: snap.y, width: snap.w, height: snap.h }} />}
 
       <nav className="dock">
         {APPS.map((a) => {
