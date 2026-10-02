@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { getNode, listDir, pathStr, resolvePath, tree, type FsNode } from "./fs";
 
 // ---------- Personalise me! ----------
 export const ME = {
@@ -99,6 +100,7 @@ type Line = { cmd?: string; out?: string };
 export function Terminal({ open }: { open: (id: string) => void }) {
   const [lines, setLines] = useState<Line[]>([{ out: "NebulaOS terminal v1.0 — type 'help'" }]);
   const [input, setInput] = useState("");
+  const [cwd, setCwd] = useState<string[]>([]);
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
     end.current?.scrollIntoView();
@@ -111,7 +113,43 @@ export function Terminal({ open }: { open: (id: string) => void }) {
       case "":
         return;
       case "help":
-        out = "help  about  date  echo <text>  open <app>  neofetch  clear\napps: about notes calc snake settings";
+        out =
+          "help  about  date  echo <text>  open <app>  neofetch  clear\nls [dir]  cd <dir>  pwd  cat <file>  tree\napps: about notes calc snake settings files";
+        break;
+      case "pwd":
+        out = pathStr(cwd);
+        break;
+      case "ls": {
+        const p = resolvePath(cwd, args[0] ?? "");
+        const n = getNode(p);
+        out = !n
+          ? `ls: no such directory: ${args[0]}`
+          : n.kind === "file"
+            ? p[p.length - 1]
+            : listDir(p).map(([name, c]) => (c.kind === "dir" ? name + "/" : name)).join("  ");
+        break;
+      }
+      case "cd": {
+        const p = resolvePath(cwd, args[0] ?? "");
+        const n = getNode(p);
+        if (n?.kind === "dir") {
+          setCwd(p);
+          setLines((l) => [...l, { cmd: raw }]);
+          return;
+        }
+        out = n ? `cd: not a directory: ${args[0]}` : `cd: no such directory: ${args[0]}`;
+        break;
+      }
+      case "cat": {
+        const n = args[0] ? getNode(resolvePath(cwd, args[0])) : null;
+        out = n?.kind === "file" ? n.content : args[0] ? `cat: cannot read: ${args[0]}` : "usage: cat <file>";
+        break;
+      }
+      case "tree":
+        {
+          const p = resolvePath(cwd, args[0] ?? "");
+          out = getNode(p)?.kind === "dir" ? `${pathStr(p)}\n${tree(p)}` : `tree: no such directory: ${args[0]}`;
+        }
         break;
       case "about":
         out = `${ME.name} — ${ME.tagline}`;
@@ -126,10 +164,10 @@ export function Terminal({ open }: { open: (id: string) => void }) {
         out = `   .-.     NebulaOS 1.0\n  (o o)    user: ${ME.name}\n  | O |    shell: nebula-sh\n   '~'     uptime: ${Math.round(performance.now() / 1000)}s`;
         break;
       case "open":
-        if (["about", "notes", "calc", "snake", "settings"].includes(args[0])) {
+        if (["about", "notes", "calc", "snake", "settings", "files"].includes(args[0])) {
           open(args[0]);
           out = `launching ${args[0]}...`;
-        } else out = "usage: open <about|notes|calc|snake|settings>";
+        } else out = "usage: open <about|notes|calc|snake|settings|files>";
         break;
       case "clear":
         setLines([]);
@@ -152,7 +190,7 @@ export function Terminal({ open }: { open: (id: string) => void }) {
         <div ref={end} />
       </div>
       <div className="term-line">
-        <span className="cmd" style={{ color: "var(--accent2)" }}>❯</span>
+        <span className="cmd" style={{ color: "var(--accent2)" }}>{pathStr(cwd)} ❯</span>
         <input
           autoFocus
           value={input}
@@ -166,6 +204,48 @@ export function Terminal({ open }: { open: (id: string) => void }) {
           }}
         />
       </div>
+    </div>
+  );
+}
+
+// ---------- Files ----------
+export function Files({ open }: { open: (id: string) => void }) {
+  const [path, setPath] = useState<string[]>([]);
+  const [preview, setPreview] = useState<{ name: string; text: string } | null>(null);
+
+  const go = (p: string[]) => {
+    setPath(p);
+    setPreview(null);
+  };
+  const activate = (name: string, node: FsNode) => {
+    if (node.kind === "dir") return go([...path, name]);
+    if (node.app) return open(node.app);
+    setPreview({ name, text: node.content });
+  };
+
+  return (
+    <div>
+      <div className="crumbs">
+        <button onClick={() => go([])}>🏠</button>
+        {path.map((p, i) => (
+          <button key={i} onClick={() => go(path.slice(0, i + 1))}>/ {p}</button>
+        ))}
+        {path.length > 0 && <button className="up" onClick={() => go(path.slice(0, -1))}>⬆ Up</button>}
+      </div>
+      <div className="file-grid">
+        {listDir(path).map(([name, node]) => (
+          <button key={name} className="file-item" onDoubleClick={() => activate(name, node)} onClick={() => window.innerWidth < 700 && activate(name, node)} title="Double-click to open">
+            <span className="ico">{node.kind === "dir" ? "📁" : node.app ? "🚀" : "📄"}</span>
+            <span>{name}</span>
+          </button>
+        ))}
+      </div>
+      {preview && (
+        <div className="preview">
+          <b>{preview.name}</b>
+          <pre>{preview.text}</pre>
+        </div>
+      )}
     </div>
   );
 }
