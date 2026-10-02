@@ -260,8 +260,56 @@ export function applyTheme(key: string) {
   localStorage.setItem("nebula-theme", key);
 }
 
+const WALLPAPERS: Record<string, string> = {
+  Aurora: "linear-gradient(135deg,#0f2027,#203a43,#2c5364)",
+  Dusk: "linear-gradient(160deg,#42275a,#734b6d)",
+  Peach: "radial-gradient(circle at 30% 20%,#ff9a9e,#fad0c4 40%,#a18cd1 100%)",
+  Midnight: "linear-gradient(180deg,#000428,#004e92)",
+  Forest: "linear-gradient(135deg,#134e5e,#71b280)",
+};
+
+export function applyWallpaper(value: string) {
+  document.documentElement.style.setProperty("--wallpaper", value || "none");
+}
+
+function saveWallpaper(value: string): boolean {
+  try {
+    localStorage.setItem("nebula-wall", value);
+    return true;
+  } catch {
+    return false; // storage quota exceeded
+  }
+}
+
+// Downscale uploads so they fit in localStorage
+function imageToWallpaper(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = img.width * scale;
+      c.height = img.height * scale;
+      c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+      resolve(`url(${c.toDataURL("image/jpeg", 0.8)})`);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export function Settings({ onReset }: { onReset: () => void }) {
   const [cur, setCur] = useState(() => localStorage.getItem("nebula-theme") ?? "nebula");
+  const [wall, setWall] = useState(() => localStorage.getItem("nebula-wall") ?? "");
+  const [err, setErr] = useState("");
+
+  const pickWall = (v: string) => {
+    setErr("");
+    applyWallpaper(v);
+    setWall(v);
+    if (!saveWallpaper(v)) setErr("Too big to remember after refresh.");
+  };
+
   return (
     <div>
       <h2>Appearance</h2>
@@ -279,6 +327,34 @@ export function Settings({ onReset }: { onReset: () => void }) {
             }}
           />
         ))}
+      </div>
+      <div className="set-row">
+        <h2>Wallpaper</h2>
+        <div className="walls">
+          <button className={`wall none${wall === "" ? " on" : ""}`} onClick={() => pickWall("")}>Theme</button>
+          {Object.entries(WALLPAPERS).map(([name, v]) => (
+            <button
+              key={name}
+              title={name}
+              className={`wall${wall === v ? " on" : ""}`}
+              style={{ ["--wall-bg" as string]: v }}
+              onClick={() => pickWall(v)}
+            />
+          ))}
+        </div>
+        <label className="pill-btn" style={{ display: "inline-block", marginTop: 10, cursor: "pointer" }}>
+          📷 Upload image
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={async (e) => {
+              const f = e.target.files?.[0];
+              if (f) pickWall(await imageToWallpaper(f));
+            }}
+          />
+        </label>
+        {err && <div className="muted" style={{ marginTop: 6 }}>{err}</div>}
       </div>
       <div className="set-row">
         <h2>System</h2>

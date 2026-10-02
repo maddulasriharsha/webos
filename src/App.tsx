@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Window, { type WinState } from "./Window";
-import { About, Calculator, Notes, Settings, Snake, Terminal, ME, applyTheme, type AppDef } from "./apps";
+import { About, Calculator, Notes, Settings, Snake, Terminal, ME, applyTheme, applyWallpaper, type AppDef } from "./apps";
 
 const APPS: AppDef[] = [
   { id: "about", title: "About Me", icon: "🧑‍🚀", w: 480, h: 440, render: () => <About /> },
@@ -8,7 +8,7 @@ const APPS: AppDef[] = [
   { id: "notes", title: "Notes", icon: "📝", w: 380, h: 320, render: () => <Notes /> },
   { id: "calc", title: "Calculator", icon: "🧮", w: 340, h: 440, render: () => <Calculator /> },
   { id: "snake", title: "Snake", icon: "🐍", w: 400, h: 430, render: () => <Snake /> },
-  { id: "settings", title: "Settings", icon: "⚙️", w: 400, h: 340, render: ({ closeAll }) => <Settings onReset={closeAll} /> },
+  { id: "settings", title: "Settings", icon: "⚙️", w: 420, h: 480, render: ({ closeAll }) => <Settings onReset={closeAll} /> },
 ];
 
 function Clock() {
@@ -55,6 +55,7 @@ export default function App() {
 
   useEffect(() => {
     applyTheme(localStorage.getItem("nebula-theme") ?? "nebula");
+    applyWallpaper(localStorage.getItem("nebula-wall") ?? "");
   }, []);
 
   const bringToFront = (id: string) => {

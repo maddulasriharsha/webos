@@ -88,6 +88,10 @@ input, textarea { font: inherit; color: inherit; }
   animation: aurora 24s ease-in-out infinite alternate;
 }
 @keyframes aurora { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+.desktop::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--wallpaper, none) center / cover no-repeat;
+}
 
 .topbar {
   position: absolute; top: 0; left: 0; right: 0; height: 34px; z-index: 10000;
@@ -190,6 +194,10 @@ textarea.notes {
 .swatches { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .swatch { width: 38px; height: 38px; border-radius: 50%; border: 3px solid transparent; }
 .swatch.on { border-color: #fff; }
+.walls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.wall { width: 64px; height: 42px; border-radius: 8px; border: 2px solid transparent; background: var(--wall-bg) center / cover; }
+.wall.on { border-color: #fff; }
+.wall.none { background: rgba(255,255,255,.08); font-size: 11px; }
 .pill-btn { padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.12); margin-right: 8px; }
 .pill-btn:hover { background: rgba(255,255,255,.22); }
 
