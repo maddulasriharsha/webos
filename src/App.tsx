@@ -4,10 +4,10 @@ import { BootScreen, ContextMenu, LockScreen, OffScreen, PowerMenu, Spotlight, T
 import { About, Calculator, Files, Notes, Paint, Settings, Snake, Terminal, ME, applyTheme, applyWallpaper, type AppDef } from "./apps";
 
 const APPS: AppDef[] = [
-  { id: "about", title: "About Me", icon: "🧑‍🚀", w: 540, h: 540, render: () => <About /> },
+  { id: "about", title: "About Me", icon: "🧑‍🚀", w: 540, h: 620, render: () => <About /> },
   { id: "files", title: "Files", icon: "📁", w: 480, h: 380, render: ({ open }) => <Files open={open} /> },
   { id: "terminal", title: "Terminal", icon: "💻", w: 520, h: 340, render: ({ open }) => <Terminal open={open} /> },
-  { id: "paint", title: "Paint", icon: "🎨", w: 560, h: 460, render: () => <Paint /> },
+  { id: "paint", title: "Paint", icon: "🎨", w: 560, h: 540, render: () => <Paint /> },
   { id: "notes", title: "Notes", icon: "📝", w: 380, h: 320, render: () => <Notes /> },
   { id: "calc", title: "Calculator", icon: "🧮", w: 340, h: 440, render: () => <Calculator /> },
   { id: "snake", title: "Snake", icon: "🐍", w: 400, h: 430, render: ({ notify }) => <Snake notify={notify} /> },
