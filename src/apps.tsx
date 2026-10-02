@@ -114,7 +114,7 @@ export function Terminal({ open }: { open: (id: string) => void }) {
         return;
       case "help":
         out =
-          "help  about  date  echo <text>  open <app>  neofetch  clear\nls [dir]  cd <dir>  pwd  cat <file>  tree\napps: about notes calc snake settings files";
+          "help  about  date  echo <text>  open <app>  neofetch  clear\nls [dir]  cd <dir>  pwd  cat <file>  tree\napps: about notes calc snake settings files paint";
         break;
       case "pwd":
         out = pathStr(cwd);
@@ -164,10 +164,10 @@ export function Terminal({ open }: { open: (id: string) => void }) {
         out = `   .-.     NebulaOS 1.0\n  (o o)    user: ${ME.name}\n  | O |    shell: nebula-sh\n   '~'     uptime: ${Math.round(performance.now() / 1000)}s`;
         break;
       case "open":
-        if (["about", "notes", "calc", "snake", "settings", "files"].includes(args[0])) {
+        if (["about", "notes", "calc", "snake", "settings", "files", "paint"].includes(args[0])) {
           open(args[0]);
           out = `launching ${args[0]}...`;
-        } else out = "usage: open <about|notes|calc|snake|settings|files>";
+        } else out = "usage: open <about|notes|calc|snake|settings|files|paint>";
         break;
       case "clear":
         setLines([]);
@@ -246,6 +246,90 @@ export function Files({ open }: { open: (id: string) => void }) {
           <pre>{preview.text}</pre>
         </div>
       )}
+    </div>
+  );
+}
+
+// ---------- Paint ----------
+const PAINT_COLORS = ["#111111", "#ffffff", "#ef4444", "#f59e0b", "#22c55e", "#22d3ee", "#7c5cff", "#ff7ac6"];
+
+export function Paint() {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const last = useRef<{ x: number; y: number } | null>(null);
+  const [color, setColor] = useState(PAINT_COLORS[6]);
+  const [size, setSize] = useState(6);
+  const [eraser, setEraser] = useState(false);
+
+  const clear = () => {
+    const ctx = canvas.current!.getContext("2d")!;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 600, 400);
+  };
+  useEffect(clear, []);
+
+  const pos = (e: React.PointerEvent) => {
+    const r = canvas.current!.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * 600, y: ((e.clientY - r.top) / r.height) * 400 };
+  };
+  const stroke = (from: { x: number; y: number }, to: { x: number; y: number }) => {
+    const ctx = canvas.current!.getContext("2d")!;
+    ctx.strokeStyle = eraser ? "#ffffff" : color;
+    ctx.lineWidth = size;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+  };
+
+  return (
+    <div className="paint">
+      <div className="paint-tools">
+        {PAINT_COLORS.map((c) => (
+          <button
+            key={c}
+            aria-label={c}
+            className={`swatch sm${!eraser && color === c ? " on" : ""}`}
+            style={{ background: c }}
+            onClick={() => {
+              setColor(c);
+              setEraser(false);
+            }}
+          />
+        ))}
+        <input type="range" min={2} max={30} value={size} onChange={(e) => setSize(+e.target.value)} title="Brush size" />
+        <button className={`pill-btn${eraser ? " active" : ""}`} onClick={() => setEraser((v) => !v)}>🧽 Eraser</button>
+        <button className="pill-btn" onClick={clear}>🗑 Clear</button>
+        <button
+          className="pill-btn"
+          onClick={() => {
+            const a = document.createElement("a");
+            a.href = canvas.current!.toDataURL("image/png");
+            a.download = "nebula-paint.png";
+            a.click();
+          }}
+        >
+          💾 Save PNG
+        </button>
+      </div>
+      <canvas
+        ref={canvas}
+        width={600}
+        height={400}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          const p = pos(e);
+          last.current = p;
+          stroke(p, p);
+        }}
+        onPointerMove={(e) => {
+          if (!last.current) return;
+          const p = pos(e);
+          stroke(last.current, p);
+          last.current = p;
+        }}
+        onPointerUp={() => (last.current = null)}
+      />
     </div>
   );
 }

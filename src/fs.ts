@@ -23,6 +23,7 @@ export const ROOT: FsNode = dir({
     "terminal.app": file("Launches Terminal", "terminal"),
     "notes.app": file("Launches Notes", "notes"),
     "calc.app": file("Launches Calculator", "calc"),
+    "paint.app": file("Launches Paint", "paint"),
     "snake.app": file("Launches Snake", "snake"),
     "settings.app": file("Launches Settings", "settings"),
   }),
