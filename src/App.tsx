@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Window, { type Rect, type WinState } from "./Window";
+import { BootScreen, ContextMenu, LockScreen, OffScreen, PowerMenu, Spotlight, Toasts, type SpotItem, type Toast } from "./system";
 import { About, Calculator, Files, Notes, Settings, Snake, Terminal, ME, applyTheme, applyWallpaper, type AppDef } from "./apps";
 
 const APPS: AppDef[] = [
@@ -8,7 +9,7 @@ const APPS: AppDef[] = [
   { id: "terminal", title: "Terminal", icon: "💻", w: 520, h: 340, render: ({ open }) => <Terminal open={open} /> },
   { id: "notes", title: "Notes", icon: "📝", w: 380, h: 320, render: () => <Notes /> },
   { id: "calc", title: "Calculator", icon: "🧮", w: 340, h: 440, render: () => <Calculator /> },
-  { id: "snake", title: "Snake", icon: "🐍", w: 400, h: 430, render: () => <Snake /> },
+  { id: "snake", title: "Snake", icon: "🐍", w: 400, h: 430, render: ({ notify }) => <Snake notify={notify} /> },
   { id: "settings", title: "Settings", icon: "⚙️", w: 420, h: 480, render: ({ closeAll }) => <Settings onReset={closeAll} /> },
 ];
 
@@ -50,15 +51,37 @@ function Welcome({ onEnter }: { onEnter: () => void }) {
 let zCounter = 1;
 
 export default function App() {
-  const [booted, setBooted] = useState(false);
+  const [phase, setPhase] = useState<"welcome" | "boot" | "desktop" | "off">("welcome");
+  const [locked, setLocked] = useState(false);
   const [wins, setWins] = useState<WinState[]>([]);
   const [focus, setFocus] = useState<string | null>(null);
   const [snap, setSnap] = useState<Rect | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [spotlight, setSpotlight] = useState(false);
+  const [ctx, setCtx] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     applyTheme(localStorage.getItem("nebula-theme") ?? "nebula");
     applyWallpaper(localStorage.getItem("nebula-wall") ?? "");
   }, []);
+
+  // Ctrl+Space opens Spotlight
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.code === "Space" && phase === "desktop" && !locked) {
+        e.preventDefault();
+        setSpotlight((s) => !s);
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [phase, locked]);
+
+  const notify = (text: string, icon = "🔔") => {
+    const id = Date.now() + Math.random();
+    setToasts((t) => [...t, { id, icon, text }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4000);
+  };
 
   const bringToFront = (id: string) => {
     setFocus(id);
@@ -83,16 +106,61 @@ export default function App() {
   const close = (id: string) => setWins((ws) => ws.filter((w) => w.id !== id));
   const closeAll = () => setWins([]);
 
-  if (!booted) return <Welcome onEnter={() => setBooted(true)} />;
+  const restart = () => {
+    closeAll();
+    setLocked(false);
+    setPhase("boot");
+  };
+  const shutdown = () => {
+    closeAll();
+    setLocked(false);
+    setPhase("off");
+  };
+
+  if (phase === "welcome") return <Welcome onEnter={() => setPhase("boot")} />;
+  if (phase === "boot")
+    return (
+      <BootScreen
+        onDone={() => {
+          setPhase("desktop");
+          notify(`Welcome back, ${ME.name}!`, "👋");
+        }}
+      />
+    );
+  if (phase === "off") return <OffScreen onPower={() => setPhase("boot")} />;
 
   const focusedWin = wins.find((w) => w.id === focus && !w.minimized);
 
+  const actions: SpotItem[] = [
+    { label: "Lock screen", icon: "🔒", run: () => setLocked(true) },
+    { label: "Restart", icon: "🔄", run: restart },
+    { label: "Shut down", icon: "⏻", run: shutdown },
+  ];
+  const spotItems: SpotItem[] = [...APPS.map((a) => ({ label: a.title, icon: a.icon, run: () => open(a.id) })), ...actions];
+  const ctxItems: SpotItem[] = [
+    { label: "Change wallpaper", icon: "🖼️", run: () => open("settings") },
+    { label: "Open Terminal", icon: "💻", run: () => open("terminal") },
+    { label: "About me", icon: "🧑‍🚀", run: () => open("about") },
+    { label: "Lock screen", icon: "🔒", run: () => setLocked(true) },
+  ];
+
   return (
-    <div className="desktop">
+    <div
+      className="desktop"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        if ((e.target as HTMLElement).closest(".window, .dock, .topbar")) return;
+        setCtx({ x: e.clientX, y: e.clientY });
+      }}
+    >
       <header className="topbar">
         <span className="brand">✦ NEBULA<b>OS</b></span>
         <span className="active-title">{focusedWin ? focusedWin.title : "Desktop"}</span>
-        <Clock />
+        <span className="right">
+          <button onClick={() => setSpotlight(true)} title="Search (Ctrl+Space)">🔍</button>
+          <Clock />
+          <PowerMenu onLock={() => setLocked(true)} onRestart={restart} onShutdown={shutdown} />
+        </span>
       </header>
 
       <div className="icons">
@@ -120,10 +188,15 @@ export default function App() {
             onChange={(p) => patch(w.id, p)}
             onSnapPreview={setSnap}
           >
-            {app.render({ open, closeAll })}
+            {app.render({ open, closeAll, notify })}
           </Window>
         );
       })}
+
+      <Toasts items={toasts} />
+      {ctx && <ContextMenu x={ctx.x} y={ctx.y} items={ctxItems} onClose={() => setCtx(null)} />}
+      {spotlight && <Spotlight items={spotItems} onClose={() => setSpotlight(false)} />}
+      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
 
       {snap && <div className="snap-preview" style={{ left: snap.x, top: snap.y, width: snap.w, height: snap.h }} />}
 

@@ -254,7 +254,7 @@ export function Files({ open }: { open: (id: string) => void }) {
 const N = 18;
 const CELL = 18;
 
-export function Snake() {
+export function Snake({ notify }: { notify: (text: string, icon?: string) => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
@@ -265,6 +265,7 @@ export function Snake() {
     let snake = [{ x: 8, y: 9 }];
     let food = { x: 12, y: 9 };
     let next = { x: 1, y: 0 };
+    let pts = 0;
     dir.current = next;
     setScore(0);
     setOver(false);
@@ -301,11 +302,17 @@ export function Snake() {
       if (head.x < 0 || head.y < 0 || head.x >= N || head.y >= N || snake.some((s) => s.x === head.x && s.y === head.y)) {
         clearInterval(timer);
         setOver(true);
+        const best = Number(localStorage.getItem("nebula-snake") ?? 0);
+        if (pts > best) {
+          localStorage.setItem("nebula-snake", String(pts));
+          notify(`New Snake high score: ${pts}!`, "🏆");
+        }
         return;
       }
       snake = [head, ...snake];
       if (head.x === food.x && head.y === food.y) {
-        setScore((s) => s + 1);
+        pts++;
+        setScore(pts);
         food = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) };
       } else snake.pop();
       draw();
@@ -451,5 +458,5 @@ export type AppDef = {
   icon: string;
   w: number;
   h: number;
-  render: (ctx: { open: (id: string) => void; closeAll: () => void }) => ReactNode;
+  render: (ctx: { open: (id: string) => void; closeAll: () => void; notify: (text: string, icon?: string) => void }) => ReactNode;
 };

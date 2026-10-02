@@ -211,6 +211,48 @@ textarea.notes {
 .file-item .ico { font-size: 32px; }
 .preview { margin-top: 14px; padding: 12px; border-radius: 10px; background: rgba(0,0,0,.3); }
 .preview pre { margin-top: 6px; white-space: pre-wrap; font-family: "Cascadia Code", Consolas, monospace; font-size: 13px; }
+/* ---------- System UI ---------- */
+.orb.small { width: 70px; height: 70px; margin-bottom: 20px; }
+.boot-log { font-family: "Cascadia Code", Consolas, monospace; font-size: 13px; color: #9bf6c3; text-align: left; min-height: 110px; display: inline-block; }
+.boot-bar { width: 260px; height: 6px; margin: 12px auto 0; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
+.boot-bar div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .3s; }
+.off { height: 100%; display: grid; place-content: center; justify-items: center; gap: 14px; background: #000; color: #555; }
+.off button { font-size: 48px; width: 96px; height: 96px; border-radius: 50%; border: 2px solid #333; color: #666; }
+.off button:hover { color: var(--accent2); border-color: var(--accent2); }
+
+.lock {
+  position: absolute; inset: 0; z-index: 20000; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 12vh 0 8vh;
+  background: rgba(8, 6, 26, 0.55); backdrop-filter: blur(28px) brightness(.8);
+  animation: fade .3s;
+}
+@keyframes fade { from { opacity: 0; } }
+.lock-time { font-size: clamp(4rem, 14vw, 8rem); font-weight: 200; line-height: 1; }
+.lock-date { font-size: 1.3rem; color: var(--muted); margin-top: -4vh; }
+.lock-user { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lock-hint { animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+
+.toasts { position: absolute; top: 46px; right: 14px; z-index: 15000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { padding: 10px 14px; border-radius: 12px; font-size: 13px; background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); box-shadow: 0 8px 30px rgba(0,0,0,.4); animation: slide .25s ease-out; }
+@keyframes slide { from { transform: translateX(30px); opacity: 0; } }
+
+.topbar .right { display: flex; align-items: center; gap: 14px; }
+.topbar .right > button { font-size: 14px; opacity: .85; }
+.topbar .right > button:hover { opacity: 1; color: var(--accent2); }
+.power { position: relative; }
+.menu { position: absolute; right: 0; top: 26px; min-width: 150px; padding: 6px; border-radius: 12px; display: flex; flex-direction: column; background: rgba(20,18,44,.92); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: 0 12px 40px rgba(0,0,0,.5); z-index: 20001; }
+.menu button { text-align: left; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
+.menu button:hover { background: var(--accent); }
+.menu.ctx { position: fixed; right: auto; top: auto; }
+
+.spot-back { position: absolute; inset: 0; z-index: 19000; display: flex; justify-content: center; padding-top: 14vh; background: rgba(0,0,0,.35); animation: fade .15s; }
+.spot { width: min(520px, 92vw); height: fit-content; border-radius: 16px; overflow: hidden; background: rgba(20,18,44,.94); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+.spot input { width: 100%; padding: 16px 18px; font-size: 18px; background: none; border: none; outline: none; border-bottom: 1px solid var(--glass-border); user-select: text; }
+.spot-results { max-height: 300px; overflow: auto; padding: 6px; }
+.spot-results button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; }
+.spot-results button.on { background: var(--accent); }
+
 .walls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .wall { width: 64px; height: 42px; border-radius: 8px; border: 2px solid transparent; background: var(--wall-bg) center / cover; }
 .wall.on { border-color: #fff; }
