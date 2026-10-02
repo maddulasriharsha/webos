@@ -4,14 +4,28 @@ import { getNode, listDir, pathStr, resolvePath, tree, type FsNode } from "./fs"
 // ---------- Personalise me! ----------
 export const ME = {
   name: "Sriharsha",
-  tagline: "Builder, tinkerer & space-station architect",
-  bio: "I made NebulaOS for Hack Club's WebOS workshop. Poke around: open the apps, drag the windows, and try the terminal!",
-  skills: ["React", "TypeScript", "HTML/CSS", "Python", "Hack Club"],
-  projects: [
-    { name: "NebulaOS", desc: "This very operating system, running in your browser." },
-    { name: "PulseVision", desc: "Another project from my workshop folder." },
+  fullName: "Maddula Sriharsha Reddy",
+  tagline: "Aspiring semiconductor & chip design engineer",
+  location: "Hyderabad, India",
+  bio: "Second-year B.Tech student in Electronics & Communication (VLSI Design & Technology) at VNR VJIET. I love semiconductor physics, digital electronics, RTL design and building things that blink, beep and think. I made NebulaOS for Hack Club's WebOS workshop, so poke around: open the apps, drag the windows, and try the terminal!",
+  education: [
+    "B.Tech ECE (VLSI Design & Technology), VNR VJIET, 2025–2029, CGPA 8.55",
+    "Intermediate, Trividyaa Junior College, 97.7%",
   ],
-  links: [{ label: "GitHub", href: "https://github.com/maddulasriharsha" }],
+  skills: ["C", "C++", "Python", "Verilog", "SystemVerilog", "Xilinx Vivado", "MATLAB", "Multisim", "Linux", "GitHub", "React", "TypeScript"],
+  learning: "FPGA development, RTL design, DSA, advanced Python",
+  projects: [
+    { name: "NebulaOS", desc: "This very operating system: windows, terminal, Paint, Files and more, running in your browser." },
+    { name: "PulseVision (in progress)", desc: "Phone-first, offline health triage: reads heart rate from the front camera (rPPG) and runs an on-device Gemma 2B LLM for first-aid tips. Kotlin, Jetpack Compose, MediaPipe." },
+    { name: "AgriAI", desc: "ESP32 + AI soil and crop health monitor with a web dashboard and Gemini-powered advice. Team of 6; I built the electronics and website integration." },
+    { name: "Crowbar Overvoltage Protection", desc: "SCR-based circuit that sounds a buzzer, then trips an SCR and blows a fuse when voltage gets unsafe." },
+  ],
+  interests: ["Cricket", "Coding", "Tech blogs", "Books", "Movies & TV"],
+  links: [
+    { label: "GitHub", href: "https://github.com/maddulasriharsha" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/sriharsha-maddula-13a975394" },
+    { label: "Email", href: "mailto:sriharsharmaddula@gmail.com" },
+  ],
 };
 
 // ---------- About ----------
@@ -21,8 +35,8 @@ export function About() {
       <div className="about">
         <div className="avatar">🧑‍🚀</div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <h2>{ME.name}</h2>
-          <p className="muted">{ME.tagline}</p>
+          <h2>{ME.fullName}</h2>
+          <p className="muted">{ME.tagline} · 📍 {ME.location}</p>
           <p style={{ marginTop: 10 }}>{ME.bio}</p>
           <div className="chips">
             {ME.skills.map((s) => (
@@ -31,6 +45,11 @@ export function About() {
           </div>
         </div>
       </div>
+      <h2 style={{ marginTop: 20 }}>Education</h2>
+      {ME.education.map((e) => (
+        <p key={e} className="muted">🎓 {e}</p>
+      ))}
+      <p style={{ marginTop: 8 }}>🌱 <b>Learning:</b> <span className="muted">{ME.learning}</span></p>
       <h2 style={{ marginTop: 20 }}>Projects</h2>
       {ME.projects.map((p) => (
         <div className="project" key={p.name}>
@@ -38,7 +57,13 @@ export function About() {
           <div className="muted">{p.desc}</div>
         </div>
       ))}
-      <div className="links">
+      <h2 style={{ marginTop: 20 }}>Interests</h2>
+      <div className="chips">
+        {ME.interests.map((s) => (
+          <span className="chip" key={s}>{s}</span>
+        ))}
+      </div>
+      <div className="links" style={{ marginTop: 14 }}>
         {ME.links.map((l) => (
           <a key={l.href} href={l.href} target="_blank" rel="noreferrer">🔗 {l.label}</a>
         ))}

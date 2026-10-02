@@ -9,10 +9,14 @@ const dir = (children: Record<string, FsNode>): FsNode => ({ kind: "dir", childr
 export const ROOT: FsNode = dir({
   Documents: dir({
     "readme.txt": file("Welcome to NebulaOS!\nThis file system is virtual — browse it here or with ls/cd/cat in the Terminal."),
-    "goals.txt": file("1. Ship WebOS 1\n2. Unlock WebOS 2\n3. Add Paint, Music & more apps"),
+    "goals.txt": file("1. Ship WebOS 1\n2. Unlock WebOS 2\n3. Break into VLSI / chip design\n4. Learn FPGA development & RTL design"),
+    "education.txt": file("B.Tech ECE (VLSI Design & Technology) — VNR VJIET, 2025–2029, CGPA 8.55\nIntermediate — Trividyaa Junior College, 97.7%\nSSC — Pallavi Model School, CBSE, 89%"),
+    "skills.txt": file("Languages: C, C++, Python, Verilog, SystemVerilog\nTools: MATLAB, Xilinx Vivado, Multisim\nOS: Windows, Ubuntu, Kali, macOS\nLearning: FPGA, RTL design, DSA, advanced Python"),
     Projects: dir({
       "nebulaos.md": file("# NebulaOS\nA web OS built with React + TypeScript for Hack Club."),
-      "pulsevision.md": file("# PulseVision\nAnother project from the workshop folder."),
+      "pulsevision.md": file("# PulseVision (in progress)\nContactless heart-rate (rPPG) from a phone camera + on-device Gemma 2B for offline first-aid advice.\nKotlin, Jetpack Compose, CameraX, MediaPipe, FFT."),
+      "agriai.md": file("# AgriAI\nESP32 soil & crop health monitor with a Flask dashboard and Gemini AI.\nTeam of 6 — I handled the electronics and website integration."),
+      "crowbar.md": file("# Crowbar Overvoltage Protection\nBT169 SCR circuit: buzzer warning, then SCR trips and blows the fuse above the safe voltage."),
     }),
   }),
   Pictures: dir({
