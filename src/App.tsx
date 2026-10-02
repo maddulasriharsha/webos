@@ -51,6 +51,24 @@ function Welcome({ onEnter }: { onEnter: () => void }) {
 
 let zCounter = 1;
 
+const WINS_KEY = "nebula-wins";
+
+function loadWins(): WinState[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WINS_KEY) ?? "[]") as WinState[];
+    const wins = saved.flatMap((w) => {
+      const app = APPS.find((a) => a.id === w.id);
+      if (!app) return [];
+      // keep restored windows reachable if the viewport is smaller than last time
+      return [{ ...w, title: app.title, icon: app.icon, x: Math.min(w.x, window.innerWidth - 80), y: Math.min(w.y, window.innerHeight - 40) }];
+    });
+    zCounter = Math.max(zCounter, ...wins.map((w) => w.z));
+    return wins;
+  } catch {
+    return [];
+  }
+}
+
 export default function App() {
   const [phase, setPhase] = useState<"welcome" | "boot" | "desktop" | "off">("welcome");
   const [locked, setLocked] = useState(false);
@@ -65,6 +83,11 @@ export default function App() {
     applyTheme(localStorage.getItem("nebula-theme") ?? "nebula");
     applyWallpaper(localStorage.getItem("nebula-wall") ?? "");
   }, []);
+
+  // Remember open windows across refreshes (only once the desktop is up)
+  useEffect(() => {
+    if (phase === "desktop") localStorage.setItem(WINS_KEY, JSON.stringify(wins));
+  }, [wins, phase]);
 
   // Ctrl+Space opens Spotlight
   useEffect(() => {
@@ -108,11 +131,13 @@ export default function App() {
   const closeAll = () => setWins([]);
 
   const restart = () => {
+    localStorage.removeItem(WINS_KEY);
     closeAll();
     setLocked(false);
     setPhase("boot");
   };
   const shutdown = () => {
+    localStorage.removeItem(WINS_KEY);
     closeAll();
     setLocked(false);
     setPhase("off");
@@ -123,6 +148,7 @@ export default function App() {
     return (
       <BootScreen
         onDone={() => {
+          setWins(loadWins());
           setPhase("desktop");
           notify(`Welcome back, ${ME.name}!`, "👋");
         }}
