@@ -369,19 +369,35 @@ export function Snake({ notify }: { notify: (text: string, icon?: string) => voi
   const [over, setOver] = useState(false);
   const [round, setRound] = useState(0);
   const dir = useRef({ x: 1, y: 0 });
+  const steer = useRef<(x: number, y: number) => void>(() => {});
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     let snake = [{ x: 8, y: 9 }];
     let food = { x: 12, y: 9 };
     let next = { x: 1, y: 0 };
     let pts = 0;
+    let running = false; // waits for the first swipe / tap / key so phones get time to react
     dir.current = next;
     setScore(0);
     setOver(false);
+    setStarted(false);
     const ctx = canvas.current!.getContext("2d")!;
     const style = getComputedStyle(document.documentElement);
 
+    // shared by keyboard, swipe and the on-screen pad; can't reverse straight into itself
+    steer.current = (x, y) => {
+      if (!running) {
+        running = true;
+        setStarted(true);
+      }
+      if (x !== -dir.current.x || y !== -dir.current.y) next = { x, y };
+    };
+
     const key = (e: KeyboardEvent) => {
+      // don't hijack typing in the Terminal, Notes, search, etc.
+      if ((e.target as HTMLElement | null)?.closest?.("input, textarea")) return;
       const m: Record<string, [number, number]> = {
         ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
         w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
@@ -389,7 +405,7 @@ export function Snake({ notify }: { notify: (text: string, icon?: string) => voi
       const d = m[e.key];
       if (!d) return;
       e.preventDefault();
-      if (d[0] !== -dir.current.x || d[1] !== -dir.current.y) next = { x: d[0], y: d[1] };
+      steer.current(d[0], d[1]);
     };
     window.addEventListener("keydown", key);
 
@@ -406,6 +422,7 @@ export function Snake({ notify }: { notify: (text: string, icon?: string) => voi
     };
 
     const timer = setInterval(() => {
+      if (!running) return;
       dir.current = next;
       const head = { x: snake[0].x + next.x, y: snake[0].y + next.y };
       if (head.x < 0 || head.y < 0 || head.x >= N || head.y >= N || snake.some((s) => s.x === head.x && s.y === head.y)) {
@@ -435,8 +452,32 @@ export function Snake({ notify }: { notify: (text: string, icon?: string) => voi
 
   return (
     <div className="snake-wrap">
-      <div>Score: <b>{score}</b> <span className="muted">· arrows / WASD</span></div>
-      <canvas ref={canvas} width={N * CELL} height={N * CELL} />
+      <div>
+        Score: <b>{score}</b>{" "}
+        <span className="muted">· {started || over ? "arrows / WASD / swipe" : "swipe, tap an arrow or press a key to start"}</span>
+      </div>
+      <canvas
+        ref={canvas}
+        width={N * CELL}
+        height={N * CELL}
+        onPointerDown={(e) => (swipe.current = { x: e.clientX, y: e.clientY })}
+        onPointerUp={(e) => {
+          const s = swipe.current;
+          swipe.current = null;
+          if (!s) return;
+          const dx = e.clientX - s.x;
+          const dy = e.clientY - s.y;
+          if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+          if (Math.abs(dx) > Math.abs(dy)) steer.current(dx > 0 ? 1 : -1, 0);
+          else steer.current(0, dy > 0 ? 1 : -1);
+        }}
+      />
+      <div className="dpad">
+        <button aria-label="Up" className="up" onPointerDown={() => steer.current(0, -1)}>▲</button>
+        <button aria-label="Left" className="left" onPointerDown={() => steer.current(-1, 0)}>◀</button>
+        <button aria-label="Right" className="right" onPointerDown={() => steer.current(1, 0)}>▶</button>
+        <button aria-label="Down" className="down" onPointerDown={() => steer.current(0, 1)}>▼</button>
+      </div>
       {over && <button className="pill-btn" onClick={() => setRound((r) => r + 1)}>Game over — play again</button>}
     </div>
   );

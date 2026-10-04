@@ -133,6 +133,7 @@ input, textarea { font: inherit; color: inherit; }
   border-bottom: 1px solid var(--glass-border);
 }
 .win-bar:active { cursor: grabbing; }
+.win-bar, .resize { touch-action: none; }
 .win-title { font-size: 13px; font-weight: 600; }
 .win-ctrls { display: flex; gap: 8px; }
 .dot { width: 14px; height: 14px; border-radius: 50%; }
@@ -195,8 +196,15 @@ textarea.notes {
 .term-line input { flex: 1; background: none; border: none; outline: none; color: #fff; font-family: inherit; }
 
 .snake-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.snake-wrap canvas { border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(0,0,0,.4); }
+.snake-wrap canvas { touch-action: none; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(0,0,0,.4); }
 
+.dpad { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 46px); gap: 6px; touch-action: manipulation; }
+.dpad button { border-radius: 12px; background: rgba(255,255,255,.12); font-size: 18px; }
+.dpad button:active { background: var(--accent); }
+.dpad .up { grid-column: 2; grid-row: 1; }
+.dpad .left { grid-column: 1; grid-row: 2; }
+.dpad .down { grid-column: 2; grid-row: 2; }
+.dpad .right { grid-column: 3; grid-row: 2; }
 .set-row { margin: 14px 0; }
 .swatches { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .swatch { width: 38px; height: 38px; border-radius: 50%; border: 3px solid transparent; }

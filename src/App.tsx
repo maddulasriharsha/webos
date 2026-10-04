@@ -10,7 +10,7 @@ const APPS: AppDef[] = [
   { id: "paint", title: "Paint", icon: "🎨", w: 560, h: 540, render: () => <Paint /> },
   { id: "notes", title: "Notes", icon: "📝", w: 380, h: 320, render: () => <Notes /> },
   { id: "calc", title: "Calculator", icon: "🧮", w: 340, h: 440, render: () => <Calculator /> },
-  { id: "snake", title: "Snake", icon: "🐍", w: 400, h: 430, render: ({ notify }) => <Snake notify={notify} /> },
+  { id: "snake", title: "Snake", icon: "🐍", w: 400, h: 560, render: ({ notify }) => <Snake notify={notify} /> },
   { id: "settings", title: "Settings", icon: "⚙️", w: 420, h: 480, render: ({ closeAll }) => <Settings onReset={closeAll} /> },
 ];
 
