@@ -102,6 +102,8 @@ export default function Window({ win, focused, onFocus, onClose, onMinimize, onC
 
   return (
     <div
+      role="dialog"
+      aria-label={win.title}
       className={`window${focused ? " focused" : ""}${win.restore ? " snapped" : ""}`}
       style={{
         left: win.x,
